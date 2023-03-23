@@ -27,8 +27,8 @@ func ConvertToItem(
 				item := &Item{}
 				inputItem := sdc.Header.Item[0]
 
-				orderID := psdc.OrderItem[i].OrderID
-				orderItem := psdc.OrderItem[i].OrderItem
+				orderID := psdc.InvoiceDocumentItem[i].OrderID
+				orderItem := psdc.InvoiceDocumentItem[i].OrderItem
 
 				ordersItemIdx := -1
 				for j, ordersItem := range psdc.OrdersItem {
@@ -116,9 +116,23 @@ func ConvertToItem(
 				items = append(items, item)
 			}
 		} else if processType.IndividualProcess {
-			for i := range sdc.Header.Item {
+			for i := range psdc.InvoiceDocumentItem {
 				item := &Item{}
-				inputItem := sdc.Header.Item[i]
+				inputItem := sdc.Header.Item[0]
+
+				orderID := psdc.InvoiceDocumentItem[i].OrderID
+				orderItem := psdc.InvoiceDocumentItem[i].OrderItem
+
+				ordersItemIdx := -1
+				for j, ordersItem := range psdc.OrdersItem {
+					if ordersItem.OrderID == orderID && ordersItem.OrderItem == orderItem {
+						ordersItemIdx = j
+						break
+					}
+				}
+				if ordersItemIdx == -1 {
+					continue
+				}
 
 				// 入力ファイル
 				item, err = jsonTypeConversion(item, inputItem)
@@ -133,17 +147,17 @@ func ConvertToItem(
 				}
 
 				// 1-2
-				item, err = jsonTypeConversion(item, psdc.OrdersItem[0])
+				item, err = jsonTypeConversion(item, psdc.OrdersItem[i])
 				if err != nil {
 					return nil, xerrors.Errorf("request create error: %w", err)
 				}
 
 				item.InvoiceDocument = psdc.CalculateInvoiceDocument[0].InvoiceDocument
 				item.InvoiceDocumentItem = psdc.InvoiceDocumentItem[i].InvoiceDocumentItemNumber
-				item.InvoiceDocumentItemCategory = &psdc.OrdersItem[0].OrderItemCategory
-				item.InvoiceDocumentItemText = &psdc.OrdersItem[0].OrderItemText
-				item.InvoiceDocumentItemTextByBuyer = psdc.OrdersItem[0].OrderItemTextByBuyer
-				item.InvoiceDocumentItemTextBySeller = psdc.OrdersItem[0].OrderItemTextBySeller
+				item.InvoiceDocumentItemCategory = &psdc.OrdersItem[i].OrderItemCategory
+				item.InvoiceDocumentItemText = &psdc.OrdersItem[ordersItemIdx].OrderItemText
+				item.InvoiceDocumentItemTextByBuyer = psdc.OrdersItem[ordersItemIdx].OrderItemTextByBuyer
+				item.InvoiceDocumentItemTextBySeller = psdc.OrdersItem[ordersItemIdx].OrderItemTextBySeller
 
 				item.CreationDate = psdc.CreationDateItem.CreationDate
 				item.CreationTime = psdc.CreationTimeItem.CreationTime
@@ -151,12 +165,12 @@ func ConvertToItem(
 				item.LastChangeTime = psdc.LastChangeTimeItem.LastChangeTime
 				item.ItemBillingIsConfirmed = getBoolPtr(false)
 
-				item.InvoiceQuantity = &psdc.OrdersItem[0].OrderQuantityInDeliveryUnit
-				item.InvoiceQuantityUnit = &psdc.OrdersItem[0].DeliveryUnit
-				item.InvoiceQuantityInBaseUnit = &psdc.OrdersItem[0].OrderQuantityInBaseUnit
+				item.InvoiceQuantity = &psdc.OrdersItem[ordersItemIdx].OrderQuantityInDeliveryUnit
+				item.InvoiceQuantityUnit = &psdc.OrdersItem[ordersItemIdx].DeliveryUnit
+				item.InvoiceQuantityInBaseUnit = &psdc.OrdersItem[ordersItemIdx].OrderQuantityInBaseUnit
 
-				item.OriginDocument = psdc.OrdersItem[0].ReferenceDocument
-				item.OriginDocumentItem = psdc.OrdersItem[0].ReferenceDocumentItem
+				item.OriginDocument = psdc.OrdersItem[ordersItemIdx].ReferenceDocument
+				item.OriginDocumentItem = psdc.OrdersItem[ordersItemIdx].ReferenceDocumentItem
 
 				item.ItemPaymentRequisitionIsCreated = getBoolPtr(false)
 				item.ItemIsCleared = getBoolPtr(false)
@@ -172,8 +186,95 @@ func ConvertToItem(
 				item := &Item{}
 				inputItem := sdc.Header.Item[0]
 
-				deliveryDocument := psdc.DeliveryDocumentItem[i].DeliveryDocument
-				deliveryDocumentItem := psdc.DeliveryDocumentItem[i].DeliveryDocumentItem
+				deliveryDocument := psdc.InvoiceDocumentItem[i].DeliveryDocument
+				deliveryDocumentItem := psdc.InvoiceDocumentItem[i].DeliveryDocumentItem
+
+				deliveryDocumentItemIdx := -1
+				var billFromParty, billToParty int
+
+				for j, deliveryDocumentItemData := range psdc.DeliveryDocumentItemData {
+					if deliveryDocumentItemData.DeliveryDocument == deliveryDocument && deliveryDocumentItemData.DeliveryDocumentItem == deliveryDocumentItem {
+						if deliveryDocumentItemData.BillFromParty == nil || deliveryDocumentItemData.BillToParty == nil {
+							continue
+						}
+
+						billFromParty = *deliveryDocumentItemData.BillFromParty
+						billToParty = *deliveryDocumentItemData.BillToParty
+
+						deliveryDocumentItemIdx = j
+						break
+					}
+				}
+				if deliveryDocumentItemIdx == -1 {
+					continue
+				}
+
+				// 入力ファイル
+				item, err = jsonTypeConversion(item, inputItem)
+				if err != nil {
+					return nil, err
+				}
+
+				// 1-2
+				item, err = jsonTypeConversion(item, psdc.DeliveryDocumentItemData[deliveryDocumentItemIdx])
+				if err != nil {
+					return nil, xerrors.Errorf("request create error: %w", err)
+				}
+
+				// 1-1
+				if _, ok := deliveryDocumentHeaderMap[deliveryDocument]; !ok {
+					continue
+				}
+				item, err = jsonTypeConversion(item, deliveryDocumentHeaderMap[deliveryDocument])
+				if err != nil {
+					return nil, xerrors.Errorf("request create error: %w", err)
+				}
+
+				invoiceDocumentIdx := -1
+				for j, invoiceDocument := range psdc.CalculateInvoiceDocument {
+					if invoiceDocument.BillFromParty == billFromParty && invoiceDocument.BillToParty == billToParty {
+						invoiceDocumentIdx = j
+						break
+					}
+				}
+				if invoiceDocumentIdx == -1 {
+					continue
+				}
+
+				item.InvoiceDocument = psdc.CalculateInvoiceDocument[invoiceDocumentIdx].InvoiceDocument
+				item.InvoiceDocumentItem = psdc.InvoiceDocumentItem[i].InvoiceDocumentItemNumber
+				item.InvoiceDocumentItemCategory = psdc.DeliveryDocumentItemData[deliveryDocumentItemIdx].DeliveryDocumentItemCategory
+				item.InvoiceDocumentItemText = psdc.DeliveryDocumentItemData[deliveryDocumentItemIdx].DeliveryDocumentItemText
+				item.InvoiceDocumentItemTextByBuyer = psdc.DeliveryDocumentItemData[deliveryDocumentItemIdx].DeliveryDocumentItemTextByBuyer
+				item.InvoiceDocumentItemTextBySeller = psdc.DeliveryDocumentItemData[deliveryDocumentItemIdx].DeliveryDocumentItemTextBySeller
+
+				item.CreationDate = psdc.CreationDateItem.CreationDate
+				item.CreationTime = psdc.CreationTimeItem.CreationTime
+				item.LastChangeDate = psdc.LastChangeDateItem.LastChangeDate
+				item.LastChangeTime = psdc.LastChangeTimeItem.LastChangeTime
+				item.ItemBillingIsConfirmed = getBoolPtr(false)
+
+				item.InvoiceQuantity = psdc.DeliveryDocumentItemData[deliveryDocumentItemIdx].ActualGoodsReceiptQuantity
+				item.InvoiceQuantityUnit = psdc.DeliveryDocumentItemData[deliveryDocumentItemIdx].DeliveryUnit
+				item.InvoiceQuantityInBaseUnit = psdc.DeliveryDocumentItemData[deliveryDocumentItemIdx].ActualGoodsReceiptQtyInBaseUnit
+
+				item.OriginDocument = psdc.DeliveryDocumentItemData[deliveryDocumentItemIdx].ReferenceDocument
+				item.OriginDocumentItem = psdc.DeliveryDocumentItemData[deliveryDocumentItemIdx].ReferenceDocumentItem
+
+				item.ItemPaymentRequisitionIsCreated = getBoolPtr(false)
+				item.ItemIsCleared = getBoolPtr(false)
+				item.ItemPaymentBlockStatus = getBoolPtr(false)
+				item.IsCancelled = getBoolPtr(false)
+
+				items = append(items, item)
+			}
+		} else if processType.IndividualProcess {
+			for i := range psdc.InvoiceDocumentItem {
+				item := &Item{}
+				inputItem := sdc.Header.Item[0]
+
+				deliveryDocument := psdc.InvoiceDocumentItem[i].DeliveryDocument
+				deliveryDocumentItem := psdc.InvoiceDocumentItem[i].DeliveryDocumentItem
 
 				deliveryDocumentItemIdx := -1
 				var billFromParty, billToParty int
@@ -345,7 +446,8 @@ func ConvertToItemPricingElement(
 
 			orderID := invoiceDocumentItemPricingElement.OrderID
 			orderItem := invoiceDocumentItemPricingElement.OrderItem
-			var deliveryDocument, deliveryDocumentItem, billFromParty, billToParty int
+			var deliveryDocument, deliveryDocumentItem int
+			var billFromParty, billToParty int
 			for _, deliveryDocumentItemData := range psdc.DeliveryDocumentItemData {
 				if deliveryDocumentItemData.OrderID == nil || deliveryDocumentItemData.OrderItem == nil {
 					continue

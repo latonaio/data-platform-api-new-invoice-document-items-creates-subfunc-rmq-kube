@@ -18,9 +18,7 @@ type SDC struct {
 }
 
 type InputParameters struct {
-	InvoiceDocumentDate       *[]*string `json:"InvoiceDocumentDate"`
-	InvoiceDocumentDateTo     *string    `json:"InvoiceDocumentDateTo"`
-	InvoiceDocumentDateFrom   *string    `json:"InvoiceDocumentDateFrom"`
+	InvoiceDocumentDate       *string    `json:"InvoiceDocumentDate"`
 	BillFromParty             *[]*int    `json:"BillFromParty"`
 	BillFromPartyTo           *int       `json:"BillFromPartyTo"`
 	BillFromPartyFrom         *int       `json:"BillFromPartyFrom"`
@@ -33,10 +31,10 @@ type InputParameters struct {
 	ActualGoodsIssueDate      *[]*string `json:"ActualGoodsIssueDate"`
 	ActualGoodsIssueDateTo    *string    `json:"ActualGoodsIssueDateTo"`
 	ActualGoodsIssueDateFrom  *string    `json:"ActualGoodsIssueDateFrom"`
-	ActualGoodsIssueTime      *[]string  `json:"ActualGoodsIssueTime"`
-	ActualGoodsIssueTimeTo    string     `json:"ActualGoodsIssueTimeTo"`
-	ActualGoodsIssueTimeFrom  string     `json:"ActualGoodsIssueTimeFrom"`
-	ReferenceDocument         int        `json:"ReferenceDocument"`
+	ActualGoodsIssueTime      *[]*string `json:"ActualGoodsIssueTime"`
+	ActualGoodsIssueTimeTo    *string    `json:"ActualGoodsIssueTimeTo"`
+	ActualGoodsIssueTimeFrom  *string    `json:"ActualGoodsIssueTimeFrom"`
+	ReferenceDocument         *int       `json:"ReferenceDocument"`
 }
 
 type Header struct {
@@ -78,8 +76,8 @@ type Header struct {
 	HeaderPaymentBlockStatus          *bool     `json:"HeaderPaymentBlockStatus"`
 	HeaderPaymentRequisitionIsCreated *bool     `json:"HeaderPaymentRequisitionIsCreated"`
 	IsCancelled                       *bool     `json:"IsCancelled"`
+	Item                              []Item    `json:"Item"`
 	Partner                           []Partner `json:"Partner"`
-	Item                              []Item    `json:"InvoiceDocumentItem"`
 	Address                           []Address `json:"Address"`
 }
 

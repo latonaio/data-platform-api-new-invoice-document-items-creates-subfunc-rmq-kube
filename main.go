@@ -6,6 +6,7 @@ import (
 	dpfm_api_output_formatter "data-platform-api-invoice-document-items-creates-subfunc/API_Output_Formatter"
 	api_processing_data_formatter "data-platform-api-invoice-document-items-creates-subfunc/API_Processing_Data_Formatter"
 	"data-platform-api-invoice-document-items-creates-subfunc/config"
+	"time"
 
 	"data-platform-api-invoice-document-items-creates-subfunc/subfunction"
 
@@ -38,6 +39,7 @@ func main() {
 	}
 	defer rmq.Stop()
 	for msg := range iter {
+		start := time.Now()
 		msg.Success()
 		sdc, err := callProcess(ctx, db, rmq, msg, c)
 		sdc.SubfuncResult = getBoolPtr(err == nil)
@@ -50,6 +52,7 @@ func main() {
 		if err != nil {
 			l.Error(err)
 		}
+		l.Info("process time %v\n", time.Since(start).Milliseconds())
 	}
 }
 

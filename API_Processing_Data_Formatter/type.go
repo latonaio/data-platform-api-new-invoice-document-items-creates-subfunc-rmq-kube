@@ -44,18 +44,18 @@ type ReferenceType struct {
 }
 
 type OrderIDKey struct {
+	BillFromParty                   []*int `json:"BillFromParty"`
 	BillFromPartyFrom               *int   `json:"BillFromPartyFrom"`
 	BillFromPartyTo                 *int   `json:"BillFromPartyTo"`
+	BillToParty                     []*int `json:"BillToParty"`
 	BillToPartyFrom                 *int   `json:"BillToPartyFrom"`
 	BillToPartyTo                   *int   `json:"BillToPartyTo"`
-	BillFromParty                   []*int `json:"BillFromParty"`
-	BillToParty                     []*int `json:"BillToParty"`
-	HeaderCompleteDeliveryIsDefined *bool  `json:"HeaderCompleteDeliveryIsDefined"`
+	HeaderCompleteDeliveryIsDefined bool   `json:"HeaderCompleteDeliveryIsDefined"`
 	HeaderDeliveryStatus            string `json:"HeaderDeliveryStatus"`
 	HeaderBillingStatus             string `json:"HeaderBillingStatus"`
-	HeaderBillingBlockStatus        *bool  `json:"HeaderBillingBlockStatus"`
-	IsCancelled                     *bool  `json:"IsCancelled"`
-	IsMarkedForDeletion             *bool  `json:"IsMarkedForDeletion"`
+	HeaderBillingBlockStatus        bool   `json:"HeaderBillingBlockStatus"`
+	IsCancelled                     bool   `json:"IsCancelled"`
+	IsMarkedForDeletion             bool   `json:"IsMarkedForDeletion"`
 	ReferenceDocument               int    `json:"ReferenceDocument"`
 }
 
@@ -77,8 +77,8 @@ type OrderItemKey struct {
 	ItemDeliveryStatus            string `json:"ItemDeliveryStatus"`
 	ItemBillingStatus             string `json:"ItemBillingStatus"`
 	ItemBillingBlockStatus        bool   `json:"ItemBillingBlockStatus"`
-	IsCancelled                   *bool  `json:"IsCancelled"`
-	IsMarkedForDeletion           *bool  `json:"IsMarkedForDeletion"`
+	IsCancelled                   bool   `json:"IsCancelled"`
+	IsMarkedForDeletion           bool   `json:"IsMarkedForDeletion"`
 }
 
 type OrderItem struct {
@@ -93,18 +93,18 @@ type OrderItem struct {
 }
 
 type DeliveryDocumentHeaderKey struct {
+	BillFromParty                   []*int `json:"BillFromParty"`
 	BillFromPartyFrom               *int   `json:"BillFromPartyFrom"`
 	BillFromPartyTo                 *int   `json:"BillFromPartyTo"`
+	BillToParty                     []*int `json:"BillToParty"`
 	BillToPartyFrom                 *int   `json:"BillToPartyFrom"`
 	BillToPartyTo                   *int   `json:"BillToPartyTo"`
-	BillFromParty                   []*int `json:"BillFromParty"`
-	BillToParty                     []*int `json:"BillToParty"`
-	HeaderCompleteDeliveryIsDefined *bool  `json:"HeaderCompleteDeliveryIsDefined"`
+	HeaderCompleteDeliveryIsDefined bool   `json:"HeaderCompleteDeliveryIsDefined"`
 	HeaderDeliveryStatus            string `json:"HeaderDeliveryStatus"`
 	HeaderBillingStatus             string `json:"HeaderBillingStatus"`
-	HeaderBillingBlockStatus        *bool  `json:"HeaderBillingBlockStatus"`
-	IsCancelled                     *bool  `json:"IsCancelled"`
-	IsMarkedForDeletion             *bool  `json:"IsMarkedForDeletion"`
+	HeaderBillingBlockStatus        bool   `json:"HeaderBillingBlockStatus"`
+	IsCancelled                     bool   `json:"IsCancelled"`
+	IsMarkedForDeletion             bool   `json:"IsMarkedForDeletion"`
 	ReferenceDocument               int    `json:"ReferenceDocument"`
 }
 
@@ -122,18 +122,18 @@ type DeliveryDocumentHeader struct {
 
 type DeliveryDocumentItemKey struct {
 	DeliveryDocument              []int     `json:"DeliveryDocument"`
+	ConfirmedDeliveryDate         []*string `json:"ConfirmedDeliveryDate"`
 	ConfirmedDeliveryDateFrom     *string   `json:"BillFromPartyFrom"`
 	ConfirmedDeliveryDateTo       *string   `json:"BillFromPartyTo"`
+	ActualGoodsIssueDate          []*string `json:"ActualGoodsIssueDate"`
 	ActualGoodsIssueDateFrom      *string   `json:"BillToPartyFrom"`
 	ActualGoodsIssueDateTo        *string   `json:"BillToPartyTo"`
-	ConfirmedDeliveryDate         []*string `json:"ConfirmedDeliveryDate"`
-	ActualGoodsIssueDate          []*string `json:"ActualGoodsIssueDate"`
 	ItemCompleteDeliveryIsDefined bool      `json:"ItemCompleteDeliveryIsDefined"`
 	// ItemDeliveryStatus            string    `json:"ItemDeliveryStatus"`
 	ItemBillingStatus      string `json:"ItemBillingStatus"`
 	ItemBillingBlockStatus bool   `json:"ItemBillingBlockStatus"`
-	IsCancelled            *bool  `json:"IsCancelled"`
-	IsMarkedForDeletion    *bool  `json:"IsMarkedForDeletion"`
+	IsCancelled            bool   `json:"IsCancelled"`
+	IsMarkedForDeletion    bool   `json:"IsMarkedForDeletion"`
 }
 
 type DeliveryDocumentItem struct {
@@ -360,17 +360,6 @@ type DeliveryDocumentPartner struct {
 }
 
 // Header
-type CalculateInvoiceDocumentKey struct {
-	ServiceLabel             string `json:"ServiceLabel"`
-	FieldNameWithNumberRange string `json:"FieldNameWithNumberRange"`
-}
-
-type CalculateInvoiceDocumentQueryGets struct {
-	ServiceLabel                string `json:"service_label"`
-	FieldNameWithNumberRange    string `json:"FieldNameWithNumberRange"`
-	InvoiceDocumentLatestNumber *int   `json:"InvoiceDocumentLatestNumber"`
-}
-
 type CalculateInvoiceDocument struct {
 	InvoiceDocumentLatestNumber *int `json:"InvoiceDocumentLatestNumber"`
 	InvoiceDocument             int  `json:"InvoiceDocument"`

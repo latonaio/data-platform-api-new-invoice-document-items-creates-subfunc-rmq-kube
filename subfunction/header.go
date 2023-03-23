@@ -5,8 +5,6 @@ import (
 	api_processing_data_formatter "data-platform-api-invoice-document-items-creates-subfunc/API_Processing_Data_Formatter"
 	"strings"
 	"time"
-
-	"golang.org/x/xerrors"
 )
 
 func (f *SubFunction) OrdersHeader(
@@ -80,31 +78,7 @@ func (f *SubFunction) DeliveryDocumentHeaderData(
 func (f *SubFunction) CalculateInvoiceDocument(
 	sdc *api_input_reader.SDC,
 	psdc *api_processing_data_formatter.SDC,
-) ([]*api_processing_data_formatter.CalculateInvoiceDocument, error) {
-	metaData := psdc.MetaData
-	dataKey := psdc.ConvertToInvoiceDocumentHeaderKey()
-
-	dataKey.ServiceLabel = metaData.ServiceLabel
-
-	rows, err := f.db.Query(
-		`SELECT ServiceLabel, FieldNameWithNumberRange, LatestNumber
-		FROM DataPlatformMastersAndTransactionsMysqlKube.data_platform_number_range_latest_number_data
-		WHERE (ServiceLabel, FieldNameWithNumberRange) = (?, ?);`, dataKey.ServiceLabel, dataKey.FieldNameWithNumberRange,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	dataQueryGets, err := psdc.ConvertToInvoiceDocumentHeaderQueryGets(sdc, rows)
-	if err != nil {
-		return nil, err
-	}
-
-	if dataQueryGets.InvoiceDocumentLatestNumber == nil {
-		return nil, xerrors.Errorf("'data_platform_number_range_latest_number_data'テーブルのLatestNumberがNULLです。")
-	}
-
+) []*api_processing_data_formatter.CalculateInvoiceDocument {
 	billParties := make([]api_processing_data_formatter.BillParty, 0)
 	if psdc.ReferenceType.OrderID {
 		for _, ordersHeader := range psdc.OrdersHeader {
@@ -152,19 +126,18 @@ func (f *SubFunction) CalculateInvoiceDocument(
 
 	data := make([]*api_processing_data_formatter.CalculateInvoiceDocument, 0)
 	for i, billParty := range billParties {
-		invoiceDocumentLatestNumber := dataQueryGets.InvoiceDocumentLatestNumber
-		invoiceDocument := *dataQueryGets.InvoiceDocumentLatestNumber + i + 1
+		invoiceDocument := sdc.Header.InvoiceDocument + i
 		billFromParty := billParty.BillFromParty
 		billToParty := billParty.BillToParty
 		orderID := billParty.OrderID
 		deliveryDocument := billParty.DeliveryDocument
 		deliveryDocumentItem := billParty.DeliveryDocumentItem
 
-		datum := psdc.ConvertToCalculateInvoiceDocument(invoiceDocumentLatestNumber, invoiceDocument, orderID, deliveryDocument, deliveryDocumentItem, billFromParty, billToParty)
+		datum := psdc.ConvertToCalculateInvoiceDocument(invoiceDocument, invoiceDocument, orderID, deliveryDocument, deliveryDocumentItem, billFromParty, billToParty)
 		data = append(data, datum)
 	}
 
-	return data, err
+	return data
 }
 
 func billPartyContain(billParties []api_processing_data_formatter.BillParty, billFromParty, billToParty int) bool {
