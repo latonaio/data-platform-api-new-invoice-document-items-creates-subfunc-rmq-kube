@@ -101,6 +101,7 @@ func ConvertToItem(
 				item.LastChangeTime = psdc.LastChangeTimeItem.LastChangeTime
 				item.ItemBillingIsConfirmed = getBoolPtr(false)
 
+				// item.ServicesRenderedDate = //TBD
 				item.InvoiceQuantity = &psdc.OrdersItem[ordersItemIdx].OrderQuantityInDeliveryUnit
 				item.InvoiceQuantityUnit = &psdc.OrdersItem[ordersItemIdx].DeliveryUnit
 				item.InvoiceQuantityInBaseUnit = &psdc.OrdersItem[ordersItemIdx].OrderQuantityInBaseUnit
@@ -165,6 +166,7 @@ func ConvertToItem(
 				item.LastChangeTime = psdc.LastChangeTimeItem.LastChangeTime
 				item.ItemBillingIsConfirmed = getBoolPtr(false)
 
+				// item.ServicesRenderedDate = //TBD
 				item.InvoiceQuantity = &psdc.OrdersItem[ordersItemIdx].OrderQuantityInDeliveryUnit
 				item.InvoiceQuantityUnit = &psdc.OrdersItem[ordersItemIdx].DeliveryUnit
 				item.InvoiceQuantityInBaseUnit = &psdc.OrdersItem[ordersItemIdx].OrderQuantityInBaseUnit
@@ -215,13 +217,13 @@ func ConvertToItem(
 					return nil, err
 				}
 
-				// 1-2
+				// 2-2
 				item, err = jsonTypeConversion(item, psdc.DeliveryDocumentItemData[deliveryDocumentItemIdx])
 				if err != nil {
 					return nil, xerrors.Errorf("request create error: %w", err)
 				}
 
-				// 1-1
+				// 2-1
 				if _, ok := deliveryDocumentHeaderMap[deliveryDocument]; !ok {
 					continue
 				}
@@ -254,6 +256,7 @@ func ConvertToItem(
 				item.LastChangeTime = psdc.LastChangeTimeItem.LastChangeTime
 				item.ItemBillingIsConfirmed = getBoolPtr(false)
 
+				// item.ServicesRenderedDate = //TBD
 				item.InvoiceQuantity = psdc.DeliveryDocumentItemData[deliveryDocumentItemIdx].ActualGoodsReceiptQuantity
 				item.InvoiceQuantityUnit = psdc.DeliveryDocumentItemData[deliveryDocumentItemIdx].DeliveryUnit
 				item.InvoiceQuantityInBaseUnit = psdc.DeliveryDocumentItemData[deliveryDocumentItemIdx].ActualGoodsReceiptQtyInBaseUnit
@@ -302,13 +305,13 @@ func ConvertToItem(
 					return nil, err
 				}
 
-				// 1-2
+				// 2-2
 				item, err = jsonTypeConversion(item, psdc.DeliveryDocumentItemData[deliveryDocumentItemIdx])
 				if err != nil {
 					return nil, xerrors.Errorf("request create error: %w", err)
 				}
 
-				// 1-1
+				// 2-1
 				if _, ok := deliveryDocumentHeaderMap[deliveryDocument]; !ok {
 					continue
 				}
@@ -341,6 +344,7 @@ func ConvertToItem(
 				item.LastChangeTime = psdc.LastChangeTimeItem.LastChangeTime
 				item.ItemBillingIsConfirmed = getBoolPtr(false)
 
+				// item.ServicesRenderedDate = //TBD
 				item.InvoiceQuantity = psdc.DeliveryDocumentItemData[deliveryDocumentItemIdx].ActualGoodsReceiptQuantity
 				item.InvoiceQuantityUnit = psdc.DeliveryDocumentItemData[deliveryDocumentItemIdx].DeliveryUnit
 				item.InvoiceQuantityInBaseUnit = psdc.DeliveryDocumentItemData[deliveryDocumentItemIdx].ActualGoodsReceiptQtyInBaseUnit
@@ -534,6 +538,7 @@ func ConvertToPartner(
 				partner.BusinessPartner = invoiceDocumentPartner.BusinessPartner
 				partner.BusinessPartnerFullName = invoiceDocumentPartner.BusinessPartnerFullName
 				partner.BusinessPartnerName = invoiceDocumentPartner.BusinessPartnerName
+				partner.Organization = invoiceDocumentPartner.Organization
 				partner.Country = invoiceDocumentPartner.Country
 				partner.Language = invoiceDocumentPartner.Language
 				partner.Currency = invoiceDocumentPartner.Currency
